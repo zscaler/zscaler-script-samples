@@ -1,9 +1,5 @@
 # Import Required Modules
-import time
-import requests
-import json
-import urllib3
-import getpass
+import time, requests, json, urllib3, getpass
 
 # Variables
 cloudName = input("Cloud Name (e.g. zscloud.net): ")
@@ -55,17 +51,17 @@ def createSessionCC(username, password, apiKey):
 def updateRole(s):
    add_url = base_url + 'adminRoles/' + roleID
    payload = {
-       'rank':'7',
-            'name':roleName,
-            'policyAccess':'NONE',
-            'alertingAccess':'READ_ONLY',
-            'dashboardAccess':'NONE',
-            'reportAccess':'NONE',
-            'analysisAccess':'NONE',
-            'usernameAccess':'NONE',
-            'deviceInfoAccess':'NONE',
-            'adminAcctAccess':'READ_WRITE',
-            'featurePermissions':{
+        'rank':'7',
+        'name':roleName,
+        'policyAccess':'NONE',
+        'alertingAccess':'READ_ONLY',
+        'dashboardAccess':'NONE',
+        'reportAccess':'NONE',
+        'analysisAccess':'NONE',
+        'usernameAccess':'NONE',
+        'deviceInfoAccess':'NONE',
+        'adminAcctAccess':'READ_WRITE',
+        'featurePermissions':{
             'APIKEY_MANAGEMENT':apiMgmt,
             'EDGE_CONNECTOR_CLOUD_PROVISIONING':cloudProv,
             'EDGE_CONNECTOR_LOCATION_MANAGEMENT':locMgmt,

@@ -1,9 +1,5 @@
 # Import Required Modules
-import time
-import requests
-import json
-import urllib3
-import getpass
+import time, requests, json, urllib3, getpass
 
 # Variables
 cloudName = input("Cloud Name (e.g. zscloud.net): ")

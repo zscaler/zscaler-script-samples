@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import time, requests, json, sys, urllib3, argparse, getpass
+import time, requests, json, sys, urllib3, getpass
 
 cloudName = input("Cloud Name (e.g. zscloud.net): ")
 username = input("Username: ")
