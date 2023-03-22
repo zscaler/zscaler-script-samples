@@ -99,3 +99,27 @@ resource "local_file" "guacamole" {
   content = local.guacamole
   filename = "guacamole.txt"
 }
+output "IM_cc1" {
+value = local.cc1
+}
+output "IM_cc2" {
+value = local.cc2
+}
+output "IM_wkld1-rdp" {
+value = local.wkld1-rdp
+}
+output "IM_wrkld1-ssh" {
+value = local.wkld1-ssh
+}
+output "IM_wkld2-rdp" {
+value = local.wkld2-rdp
+}
+output "IM_wrkld2-ssh" {
+value = local.wkld2-ssh
+}
+output "IM_zia-portal" {
+value = local.zia-portal
+}
+output "IM_cc-portal" {
+value = local.cc-portal
+}
