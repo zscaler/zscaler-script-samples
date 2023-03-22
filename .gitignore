@@ -172,3 +172,11 @@ dmypy.json
  
 # Cython debug symbols
 cython_debug/
+
+# Terraform
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate
+*.pem
+user-mapping.xml
+*.txt
