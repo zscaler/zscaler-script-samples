@@ -207,7 +207,7 @@
             <path d="M451.7 51.9h136.18v93.13H451.7z" fill="url(#B)" />
             <path class="lucid-link lucid-hotspot lucid-overlay-hotspot" d="M451.7 51.9h136.18v93.13H451.7z" fill="none" />
         </a>
-        <a xlink:href="http://{ cc-portal }}" target="_blank">
+        <a xlink:href="http://{{ cc-portal }}" target="_blank">
             <path d="M1310.08 40.5h-141.6c-4.64 0-8.48 4.3-8.48 9v98.87c0 4.72 3.84 9 8.48 9h48.48c5.12 18.45-1.76 20.96-32.48 20.96v9.88H1288.8v-9.87c-30.72 0-33.76-2.5-28.64-20.96h49.92c4.8 0 9.92-4.28 9.92-9V49.5c0-4.7-5.12-9-9.92-9zm-2.56 11.96v92.37H1172V52.46h135.52z" stroke="#000" stroke-opacity="0" fill="#0078d7" />
             <path d="M1263.04 81.68l-24.8-14.17-24.8 14.18v.44l24.8 14.17 24.8-14.62zM1240.8 100.27v28.18l24.8-14.16V86.1l-24.8 14.17zM1235.68 100.27l-24.8-14.16v28.2l24.8 14.15v-28.18z" stroke="#000" stroke-opacity="0" fill="#0078d7" />
             <use xlink:href="#C" transform="matrix(1,0,0,1,1130,197.06527930419162) translate(16.64999999999999 14.4)" />
