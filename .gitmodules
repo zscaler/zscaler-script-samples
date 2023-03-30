@@ -1,0 +1,3 @@
+[submodule "Cloud and Branch Connector/bash/getca"]
+	path = Cloud and Branch Connector/bash/getca
+	url = https://github.com/somecloudnet/getca
