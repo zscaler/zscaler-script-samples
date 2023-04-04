@@ -330,7 +330,7 @@ module "bastion" {
   providers = {
     aws = aws.region1
   }
-  source        = "./modules/terraform-zsbastion-aws"
+  source        = "../modules/terraform-zsbastion-aws"
   name_prefix   = var.name_prefix
   resource_tag  = var.name_suffix
   global_tags   = local.global_tags
@@ -345,7 +345,7 @@ module "workload1" {
   providers = {
     aws = aws.region1
   }
-  source       = "./modules/terraform-2region-zsworkload1-aws"
+  source       = "../modules/terraform-2region-zsworkload1-aws"
   name_prefix  = "${var.name_prefix}"
   resource_tag = var.name_suffix
   global_tags  = local.global_tags
@@ -360,7 +360,7 @@ module "workload2" {
   providers = {
     aws = aws.region2
   }
-  source       = "./modules/terraform-2region-zsworkload2-aws"
+  source       = "../modules/terraform-2region-zsworkload2-aws"
   name_prefix  = "${var.name_prefix}"
   resource_tag = var.name_suffix
   global_tags  = local.global_tags
@@ -467,7 +467,7 @@ module "cc-vm" {
   providers = {
     aws = aws.region1
   }
-  source             = "./modules/terraform-2region-zscc1-aws"
+  source             = "../modules/terraform-2region-zscc1-aws"
   cc_count           = var.cc_count
   name_prefix        = var.name_prefix
   resource_tag       = var.name_suffix
@@ -485,7 +485,7 @@ module "cc-vm2" {
   providers = {
     aws = aws.region2
    }
-  source             = "./modules/terraform-2region-zscc2-aws"
+  source             = "../modules/terraform-2region-zscc2-aws"
   cc_count           = var.cc_count
   name_prefix        = var.name_prefix
   resource_tag       = var.name_suffix
