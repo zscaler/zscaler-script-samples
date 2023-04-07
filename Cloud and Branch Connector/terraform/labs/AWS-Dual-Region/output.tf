@@ -82,27 +82,27 @@ resource "local_file" "bastionconfig-dns" {
   content = local.bastionconfig-dns
   filename = "bastion-info-dns.txt"
 }
-output "IM_cc1" {
-value = "http://${module.bastion.public_dns}:8080/guacamole/#/client/Q29ubmVjdCB0byBSZWdpb24xIENsb3VkIENvbm5lY3RvciAxAGMAZGVmYXVsdA?username=cloudconnector&password=CloudConnector2022!"
+output "cc1" {
+   value = "http://${module.bastion.public_dns}:8080/guacamole/#/client/Q29ubmVjdCB0byBSZWdpb24xIENsb3VkIENvbm5lY3RvciAxAGMAZGVmYXVsdA?username=cloudconnector&password=CloudConnector2022!"
 }
-output "IM_cc2" {
-value = "http://${module.bastion.public_dns}:8080/guacamole/#/client/Q29ubmVjdCB0byBSZWdpb24yIENsb3VkIENvbm5lY3RvciAxAGMAZGVmYXVsdA?username=cloudconnector&password=CloudConnector2022!"
+output "cc2" {
+   value = "http://${module.bastion.public_dns}:8080/guacamole/#/client/Q29ubmVjdCB0byBSZWdpb24yIENsb3VkIENvbm5lY3RvciAxAGMAZGVmYXVsdA?username=cloudconnector&password=CloudConnector2022!"
 }
-output "IM_wkld1-rdp" {
-value = "http://${module.bastion.public_dns}:8080/guacamole/#/client/Q29ubmVjdCB0byBSZWdpb24xIExpbnV4IFdvcmtsb2FkIChSRFApAGMAZGVmYXVsdA?username=cloudconnector&password=CloudConnector2022!"
+output "wkld1-rdp" {
+    value = "http://${module.bastion.public_dns}:8080/guacamole/#/client/Q29ubmVjdCB0byBSZWdpb24xIExpbnV4IFdvcmtsb2FkIChSRFApAGMAZGVmYXVsdA?username=cloudconnector&password=CloudConnector2022!"
 }
-output "IM_wkld1-ssh" {
-value = "http://${module.bastion.public_dns}:8080/guacamole/#/client/Q29ubmVjdCB0byBSZWdpb24xIExpbnV4IFdvcmtsb2FkIChTU0gpAGMAZGVmYXVsdA?username=cloudconnector&password=CloudConnector2022!"
+output "wkld1-ssh" {
+   value = "http://${module.bastion.public_dns}:8080/guacamole/#/client/Q29ubmVjdCB0byBSZWdpb24xIExpbnV4IFdvcmtsb2FkIChTU0gpAGMAZGVmYXVsdA?username=cloudconnector&password=CloudConnector2022!"
 }
-output "IM_wkld2-rdp" {
-value = "http://${module.bastion.public_dns}:8080/guacamole/#/client/Q29ubmVjdCB0byBSZWdpb24yIExpbnV4IFdvcmtsb2FkIChSRFApAGMAZGVmYXVsdA?username=cloudconnector&password=CloudConnector2022!"
+output "wkld2-rdp" {
+   value = "http://${module.bastion.public_dns}:8080/guacamole/#/client/Q29ubmVjdCB0byBSZWdpb24yIExpbnV4IFdvcmtsb2FkIChSRFApAGMAZGVmYXVsdA?username=cloudconnector&password=CloudConnector2022!"
 }
-output "IM_wkld2-ssh" {
-value = "http://${module.bastion.public_dns}:8080/guacamole/#/client/Q29ubmVjdCB0byBSZWdpb24yIExpbnV4IFdvcmtsb2FkIChTU0gpAGMAZGVmYXVsdA?username=cloudconnector&password=CloudConnector2022!"
+output "wkld2-ssh" {
+   value = "http://${module.bastion.public_dns}:8080/guacamole/#/client/Q29ubmVjdCB0byBSZWdpb24yIExpbnV4IFdvcmtsb2FkIChTU0gpAGMAZGVmYXVsdA?username=cloudconnector&password=CloudConnector2022!"
 }
-output "IM_zia-portal" {
-value = "https://admin.${var.cloudname}"
+output "zia-portal" {
+    value = "https://admin.${var.cloudname}"
 }
-output "IM_cc-portal" {
-value = "https://connector.${var.cloudname}"
+output "cc-portal" {
+    value = "https://connector.${var.cloudname}"
 }
