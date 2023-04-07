@@ -64,12 +64,6 @@ output "usermapping" {
   value = local.usermapping
   sensitive = true
 }
-output "bastionconfig" {
-  value = local.bastionconfig
-}
-output "bastionconfig-dns" {
-  value = local.bastionconfig-dns
-}
 resource "local_file" "usermapping" {
   content = local.usermapping
   filename = "user-mapping.xml"
