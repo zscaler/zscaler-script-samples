@@ -128,6 +128,12 @@ variable "http_probe_port" {
       }
 }
 
+variable "cross_zone_lb_enabled" {
+  default = true
+  type = bool
+  description = "Toggle cross-zone loadbalancing of GWLB on/off"
+}
+
 variable "lin_vm_count" {
   description = "Number of Linux workload VMs to deploy"
   type    = number

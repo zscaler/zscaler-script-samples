@@ -126,6 +126,12 @@ contains(local.large_cc_instance, var.ccvm_instance_type) && var.cc_instance_siz
  )
 }
 
+variable "cross_zone_lb_enabled" {
+  default = true
+  type = bool
+  description = "Toggle cross-zone loadbalancing of GWLB on/off"
+}
+
 variable "aws_access_key" {
   description = "AWS Access Key"
   type = string
