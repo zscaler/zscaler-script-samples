@@ -72,7 +72,13 @@ resource "local_file" "bastionconfig-dns" {
 output "cc1" {
    value = "http://${module.bastion.public_dns}:8080/guacamole/#/client/Q29ubmVjdCB0byBSZWdpb24xIENsb3VkIENvbm5lY3RvciAxAGMAZGVmYXVsdA?username=cloudconnector&password=CloudConnector2022!"
 }
+output "cc2" {
+   value = "http://${module.bastion.public_dns}:8080/guacamole/#/client/Q29ubmVjdCB0byBSZWdpb24xIENsb3VkIENvbm5lY3RvciAyAGMAZGVmYXVsdA?username=cloudconnector&password=CloudConnector2022!"
+}
 output "wkld1-rdp" {
+    value = "http://${module.bastion.public_dns}:8080/guacamole/#/client/Q29ubmVjdCB0byBSZWdpb24xIFdpbmRvd3MgV29ya2xvYWQgKFJEUCkAYwBkZWZhdWx0?username=cloudconnector&password=CloudConnector2022!"
+}
+output "wkld2-rdp" {
     value = "http://${module.bastion.public_dns}:8080/guacamole/#/client/Q29ubmVjdCB0byBSZWdpb24xIExpbnV4IFdvcmtsb2FkIChSRFApAGMAZGVmYXVsdA?username=cloudconnector&password=CloudConnector2022!"
 }
 output "zia-portal" {
