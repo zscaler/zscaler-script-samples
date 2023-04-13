@@ -69,3 +69,15 @@ resource "local_file" "bastionconfig-dns" {
   content = local.bastionconfig-dns
   filename = "bastion-info-dns.txt"
 }
+output "cc1" {
+   value = "http://${module.bastion.public_dns}:8080/guacamole/#/client/Q29ubmVjdCB0byBSZWdpb24xIENsb3VkIENvbm5lY3RvciAxAGMAZGVmYXVsdA?username=cloudconnector&password=CloudConnector2022!"
+}
+output "wkld1-rdp" {
+    value = "http://${module.bastion.public_dns}:8080/guacamole/#/client/Q29ubmVjdCB0byBSZWdpb24xIExpbnV4IFdvcmtsb2FkIChSRFApAGMAZGVmYXVsdA?username=cloudconnector&password=CloudConnector2022!"
+}
+output "zia-portal" {
+    value = "https://admin.${var.cloudname}"
+}
+output "cc-portal" {
+    value = "https://connector.${var.cloudname}"
+}
