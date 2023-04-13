@@ -75,15 +75,15 @@ output "cc1" {
 output "cc2" {
    value = "http://${module.bastion.public_dns}:8080/guacamole/#/client/Q29ubmVjdCB0byBSZWdpb24xIENsb3VkIENvbm5lY3RvciAyAGMAZGVmYXVsdA?username=cloudconnector&password=CloudConnector2022!"
 }
-output "wkld1-rdp" {
+output "wkld1_rdp" {
     value = "http://${module.bastion.public_dns}:8080/guacamole/#/client/Q29ubmVjdCB0byBSZWdpb24xIFdpbmRvd3MgV29ya2xvYWQgKFJEUCkAYwBkZWZhdWx0?username=cloudconnector&password=CloudConnector2022!"
 }
-output "wkld2-rdp" {
+output "wkld2_rdp" {
     value = "http://${module.bastion.public_dns}:8080/guacamole/#/client/Q29ubmVjdCB0byBSZWdpb24xIExpbnV4IFdvcmtsb2FkIChSRFApAGMAZGVmYXVsdA?username=cloudconnector&password=CloudConnector2022!"
 }
-output "zia-portal" {
+output "zia_portal" {
     value = "https://admin.${var.cloudname}"
 }
-output "cc-portal" {
+output "cc_portal" {
     value = "https://connector.${var.cloudname}"
 }
