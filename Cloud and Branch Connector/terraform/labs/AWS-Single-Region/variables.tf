@@ -4,7 +4,7 @@ variable "cloudname" {
 }
 # AWS variables
 variable "aws_region1" {
-  description = "The first AWS Region"
+  description = "Region1 Preference"
   default = "us-east-2"
 }
 
