@@ -21,7 +21,7 @@ provider "aws" {
 data "aws_ami" "ubuntu" {
   # executable_users = ["self"]
   most_recent      = true
-  owners           = ["self"]
+  owners           = ["494789115339"]
 
   filter {
     name   = "name"
