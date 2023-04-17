@@ -19,8 +19,12 @@ provider "aws" {
 
 # Locate CC AMI
 data "aws_ami" "cloudconnector" {
-  most_recent = true
-  id = "ami-09b3dbfff34ab1fcf"
+  most_recent      = true
+  owners = ["003944187227"]
+  filter {
+    name = "image-id"
+    values = ["ami-09b3dbfff34ab1fcf"]
+  }
 }
 
 
