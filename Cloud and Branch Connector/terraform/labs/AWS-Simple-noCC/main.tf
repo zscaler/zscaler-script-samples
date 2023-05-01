@@ -5,20 +5,13 @@ provider "aws" {
   secret_key = var.aws_secret_key
 }
 
-# Generate a unique random string for resource name assignment and key pair
-resource "random_string" "suffix" {
-  length  = 8
-  upper   = false
-  special = false
-}
-
 # Map default tags with values to be assigned to all tagged resources
 locals {
   global_tags = {
   Owner       = var.owner_tag
   ManagedBy   = "terraform"
   Vendor      = "Zscaler"
-  "zs-edge-connector-cluster/${var.name_prefix}-cluster-${random_string.suffix.result}" = "shared"
+  "zs-edge-connector-cluster/${var.name_prefix}-cluster-${var.name_suffix}" = "shared"
   }
 }
 ############################################################################################################################
@@ -33,13 +26,13 @@ resource "tls_private_key" "key" {
 }
 
 resource "aws_key_pair" "deployer" {
-  key_name   = "${var.name_prefix}-key-${random_string.suffix.result}"
+  key_name   = "${var.name_prefix}-key-${var.name_suffix}"
   public_key = tls_private_key.key.public_key_openssh
 
   provisioner "local-exec" {
     command = <<EOF
-      echo "${tls_private_key.key.private_key_pem}" > ${var.name_prefix}-key-${random_string.suffix.result}.pem
-      chmod 0600 ${var.name_prefix}-key-${random_string.suffix.result}.pem
+      echo "${tls_private_key.key.private_key_pem}" > ${var.name_prefix}-key-${var.name_suffix}.pem
+      chmod 0600 ${var.name_prefix}-key-${var.name_suffix}.pem
 EOF
   }
 }
@@ -57,7 +50,7 @@ resource "aws_vpc" "vpc1" {
   enable_dns_hostnames = true
 
   tags = merge(local.global_tags,
-        { Name = "${var.name_prefix}-vpc1-${random_string.suffix.result}" }
+        { Name = "${var.name_prefix}-vpc1-${var.name_suffix}" }
   )
 }
 
@@ -67,7 +60,7 @@ resource "aws_internet_gateway" "igw1" {
   vpc_id = aws_vpc.vpc1.id
 
   tags = merge(local.global_tags,
-         { Name = "${var.name_prefix}-vpc1-igw-${random_string.suffix.result}" }
+         { Name = "${var.name_prefix}-vpc1-igw-${var.name_suffix}" }
    )
 }
 
@@ -81,7 +74,7 @@ resource "aws_subnet" "pubsubnet" {
   vpc_id            = aws_vpc.vpc1.id
 
   tags = merge(local.global_tags,
-         { Name = "${var.name_prefix}-vpc1-public-subnet-${count.index + 1}-${random_string.suffix.result}" }
+         { Name = "${var.name_prefix}-vpc1-public-subnet-${count.index + 1}-${var.name_suffix}" }
    )
 }
 
@@ -94,7 +87,7 @@ resource "aws_subnet" "privsubnet" {
   vpc_id            = aws_vpc.vpc1.id
 
   tags = merge(local.global_tags,
-         { Name = "${var.name_prefix}-vpc1-workload-subnet-${count.index + 1}-${random_string.suffix.result}" }
+         { Name = "${var.name_prefix}-vpc1-workload-subnet-${count.index + 1}-${var.name_suffix}" }
    )
 }
 
@@ -109,7 +102,7 @@ resource "aws_route_table" "routetablepublic1" {
   }
 
   tags = merge(local.global_tags,
-         { Name = "${var.name_prefix}-igw-rt-${random_string.suffix.result}" }
+         { Name = "${var.name_prefix}-igw-rt-${var.name_suffix}" }
    )
 }
 
@@ -128,7 +121,7 @@ resource "aws_eip" "eip" {
   depends_on = [aws_internet_gateway.igw1]
 
   tags = merge(local.global_tags,
-         { Name = "${var.name_prefix}-eip-az${count.index + 1}-${random_string.suffix.result}" }
+         { Name = "${var.name_prefix}-eip-az${count.index + 1}-${var.name_suffix}" }
    )
 }
 
@@ -141,7 +134,7 @@ resource "aws_nat_gateway" "ngw" {
   depends_on    = [aws_internet_gateway.igw1]
   
   tags = merge(local.global_tags,
-         { Name = "${var.name_prefix}-vpc1-natgw-az${count.index + 1}-${random_string.suffix.result}" }
+         { Name = "${var.name_prefix}-vpc1-natgw-az${count.index + 1}-${var.name_suffix}" }
    )
 }
 
@@ -182,7 +175,7 @@ resource "aws_route_table" "routetableprivate" {
   }
 
   tags = merge(local.global_tags,
-         { Name = "${var.name_prefix}-natgw-rt-${count.index + 1}-${random_string.suffix.result}" }
+         { Name = "${var.name_prefix}-natgw-rt-${count.index + 1}-${var.name_suffix}" }
    )
 }
 
@@ -203,7 +196,7 @@ resource "null_resource" "user-mapping" {
     type     = "ssh"
     host     = chomp(module.bastion.public_dns)
     user     = "ubuntu"
-    private_key = file("${path.module}/zscc-aws-key-${var.name_suffix}.pem")
+    private_key = file("${path.module}/zscc-key-${var.name_suffix}.pem")
   }
   depends_on = [module.workload,module.bastion]
 }
@@ -218,7 +211,7 @@ resource "null_resource" "file-move" {
     type     = "ssh"
     host     = chomp(module.bastion.public_dns)
     user     = "ubuntu"
-    private_key = file("${path.module}/zscc-aws-key-${var.name_suffix}.pem")
+    private_key = file("${path.module}/zscc-key-${var.name_suffix}.pem")
   }
   depends_on = [null_resource.user-mapping]
 }
