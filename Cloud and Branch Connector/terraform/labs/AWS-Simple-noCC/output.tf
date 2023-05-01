@@ -7,14 +7,12 @@ usermapping = <<UM
 username="cloudconnector"
 password="8b4feec7f41e1c157701fc950372a8a2"
 encoding="md5">
-<connection name="Connect to Region1 Windows Workload (RDP)">
+<connection name="Connect to Region1 Linux Workload (RDP)">
   <protocol>rdp</protocol>
-  <param name="hostname">${module.workload[0].private_ip[0]}</param>
+  <param name="hostname">${module.workload.private_ip[0]}</param>
   <param name="port">3389</param>
-  <param name="username">administrator</param>
+  <param name="username">cloudconnector</param>
   <param name="password">CloudConnector2022!</param>
-  <param name="ignore-cert">true</param>
-  <param name="security">nla</param>
 </connection>
 </authorize>
 </user-mapping>
