@@ -167,14 +167,12 @@ module "workload" {
   workload_count  = var.workload_count
   source          = "../modules/terraform-zsworkload-linux-aws"
   name_prefix  = "${var.name_prefix}"
-  name_suffix  = "${var.name_suffix}"
   resource_tag = var.name_suffix
   global_tags  = local.global_tags
   vpc          = aws_vpc.vpc1.id
   subnet       = aws_subnet.privatesubnet.*.id
   instance_type = "t3.medium"
   instance_key = aws_key_pair.deployer.key_name
-  pem_output   = tls_private_key.key.private_key_pem
 }
 
 
