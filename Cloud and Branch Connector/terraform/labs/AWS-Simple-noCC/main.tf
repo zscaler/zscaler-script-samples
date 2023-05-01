@@ -145,8 +145,6 @@ resource "aws_nat_gateway" "ngw" {
    )
 }
 
-
-
 # 2. Create Bastion Host
 module "bastion" {
   source        = "../modules/terraform-zsbastion-aws"
@@ -159,8 +157,6 @@ module "bastion" {
   instance_key  = aws_key_pair.deployer.key_name
 }
 
-
-
 # 3. Create Workload
 # Create Workloads
 module "workload" {
@@ -170,12 +166,10 @@ module "workload" {
   resource_tag = var.name_suffix
   global_tags  = local.global_tags
   vpc          = aws_vpc.vpc1.id
-  subnet       = aws_subnet.privatesubnet.*.id
+  subnet       = aws_subnet.privsubnet.*.id
   instance_type = "t3.medium"
   instance_key = aws_key_pair.deployer.key_name
 }
-
-
 
 # 4. Routing thru NAT GW for private subnets (workload servers)
 # Create Route Table for private subnet pointing to NAT Gateway resource
