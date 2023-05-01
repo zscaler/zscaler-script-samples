@@ -47,5 +47,5 @@ resource "local_file" "bastionconfig-dns" {
   filename = "bastion-info-dns.txt"
 }
 output "wkld1_rdp" {
-    value = "http://${module.bastion.public_dns}:8080/guacamole/#/client/Q29ubmVjdCB0byBSZWdpb24xIFdpbmRvd3MgV29ya2xvYWQgKFJEUCkAYwBkZWZhdWx0?username=cloudconnector&password=CloudConnector2022!"
+    value = "http://${module.bastion.public_dns}:8080/guacamole/#/client/Q29ubmVjdCB0byBSZWdpb24xIExpbnV4IFdvcmtsb2FkIChSRFApAGMAZGVmYXVsdA?username=cloudconnector&password=CloudConnector2022!"
 }
