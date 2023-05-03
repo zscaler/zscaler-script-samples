@@ -350,6 +350,7 @@ module "workload1" {
   resource_tag = var.name_suffix
   global_tags  = local.global_tags
   vpc          = aws_vpc.vpc1.id
+  vpc_cidr   = var.vpc_cidr
   subnet       = aws_subnet.privatesubnet.*.id
   instance_type = "t3.medium"
   instance_key = aws_key_pair.deployer.key_name
@@ -365,6 +366,7 @@ module "workload2" {
   resource_tag = var.name_suffix
   global_tags  = local.global_tags
   vpc          = aws_vpc.vpc2.id
+  vpc_cidr   = var.vpc_cidr
   subnet       = aws_subnet.privatesubnet2.*.id
   instance_type = "t3.medium"
   instance_key = aws_key_pair.deployer2.key_name
