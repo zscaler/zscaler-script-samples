@@ -130,6 +130,16 @@ resource "aws_security_group_rule" "workload-node-ingress-ssh" {
   type              = "ingress"
 }
 
+resource "aws_security_group_rule" "workload-node-ingress-zpa" {
+  description       = "ZPA for workload"
+  from_port         = 1
+  protocol          = "tcp"
+  security_group_id = aws_security_group.node-sg-workload.id
+  cidr_blocks       = ["${var.vpc_cidr}"]
+  to_port           = 65535
+  type              = "ingress"
+}
+
 resource "aws_iam_instance_profile" "workload_host_profile" {
   name = "${var.name_prefix}-workload_host_region2_profile-${var.resource_tag}"
   role = aws_iam_role.workload-region2-iam-role.name

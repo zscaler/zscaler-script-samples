@@ -17,6 +17,10 @@ variable "vpc" {
   description = "Main VPC"
 }
 
+variable "vpc_cidr" {
+  description = "VPC CIDR"
+}
+
 variable "subnet" {
   description = "The private subnet where the server has to be attached"
 }
