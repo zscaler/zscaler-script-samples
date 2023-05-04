@@ -585,6 +585,9 @@ resource "null_resource" "user-mapping" {
     user     = "ubuntu"
     private_key = file("${path.module}/zscc-region1-key-${var.name_suffix}.pem")
   }
+  depends_on = [
+    local_file.usermapping
+  ]
 }
 resource "null_resource" "file-move" {
   provisioner "remote-exec" {
