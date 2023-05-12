@@ -601,6 +601,9 @@ resource "null_resource" "file-move" {
     user     = "ubuntu"
     private_key = file("${path.module}/zscc-region1-key-${var.name_suffix}.pem")
   }
+  depends_on = [
+    null_resource.user-mapping
+  ]
 }
 
 ## Create the App Connector(s)
