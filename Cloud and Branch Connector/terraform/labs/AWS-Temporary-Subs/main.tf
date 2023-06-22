@@ -720,7 +720,7 @@ module "ac-vm" {
   providers = {
     aws = aws.region1
   }
-  source             = "../modules/terraform-2region-zsac1-aws"
+  source             = "../modules/terraform-zenith-zsac1-aws"
   ac_count           = var.ac_count
   name_prefix        = var.name_prefix
   resource_tag       = var.name_suffix

@@ -1,16 +1,16 @@
 variable "cloudname" {
   description = "Zscaler Cloud Name"
-  default = "zscalertwo.net"
+  default = "zscloud.net"
 }
 # AWS variables
 variable "aws_region1" {
   description = "Region1 Preference"
-  default = "us-west-2"
+  default = "us-west-1"
 }
 
 variable "aws_region2" {
   description = "Region2 Preference"
-  default = "us-east-2"
+  default = "us-east-1"
 }
 
 variable "name_prefix" {
