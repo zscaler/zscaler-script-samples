@@ -16,15 +16,8 @@ provider "aws" {
   secret_key = var.aws_secret_key
 }
 
-data "aws_ami" "appconnector" {
-  most_recent = true
-
-  filter {
-    name   = "product-code"
-    values = ["by1wc5269g0048ix2nqvr0362"]
-  }
-
-  owners = ["aws-marketplace"]
+data "aws_ssm_parameter" "amazon_linux_latest" {
+  name  = "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
 }
 
 resource "aws_iam_role" "ac-iam-role" {
@@ -91,7 +84,7 @@ resource "aws_security_group_rule" "ac-node-ingress-ssh" {
 # Create App Connector VM
 resource "aws_instance" "ac-vm" {
   count                       = var.ac_count
-  ami                         = data.aws_ami.appconnector.id
+  ami                         = data.aws_ssm_parameter.amazon_linux_latest.value
   instance_type               = var.acvm_instance_type
   iam_instance_profile        = aws_iam_instance_profile.ac-host-profile.*.name[count.index]
   vpc_security_group_ids      = [aws_security_group.ac-sg.*.id[count.index]]
