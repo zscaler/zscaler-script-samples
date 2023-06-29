@@ -34,7 +34,7 @@ data "aws_ami" "win2016" {
 
   filter {
     name   = "name"
-    values = ["packer-windows-2016-arohyans-1688043587"]
+    values = ["packer-windows-2019-arohyans-1688069769"]
   }
 
   filter {
