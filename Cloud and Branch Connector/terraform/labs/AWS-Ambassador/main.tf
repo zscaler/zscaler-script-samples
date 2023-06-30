@@ -653,7 +653,7 @@ echo "${zpa_provisioning_key.region1_provisioning_key.provisioning_key}" > /opt/
 #Run a yum update to apply the latest patches
 yum update -y
 #Add hosts
-echo -e "${module.workload1.private_ip[0]} intranet.zstest.net" > /etc/hosts
+echo -e "${module.workload1.private_ip[0]} fileserver.zstest.net" > /etc/hosts
 #Start the App Connector service to enroll it in the ZPA cloud
 systemctl start zpa-connector
 #Wait for the App Connector to download latest build
@@ -736,7 +736,7 @@ resource "zpa_application_segment" "region1_applications" {
     from = "8080"
     to   = "8080"
   }
-  domain_names     = ["intranet.zstest.net"]
+  domain_names     = ["fileserver.zstest.net"]
   segment_group_id = zpa_segment_group.region1_segment_group.id
   server_groups {
     id = [zpa_server_group.region1_servers.id]
