@@ -718,8 +718,8 @@ module "ac-vm" {
 }
 # Create Application Segment
 resource "zpa_application_segment" "region1_applications" {
-  name             = "Region1-Intranet-${var.name_suffix}"
-  description      = "Region1 Intranet"
+  name             = "Region1-Fileserver-${var.name_suffix}"
+  description      = "Region1 Fileserver"
   enabled          = true
   health_reporting = "ON_ACCESS"
   bypass_type      = "NEVER"

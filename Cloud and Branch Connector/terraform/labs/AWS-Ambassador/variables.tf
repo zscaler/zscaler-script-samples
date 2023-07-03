@@ -20,7 +20,7 @@ variable "name_prefix" {
 }
 
 variable "name_suffix" {
-  description = "The suffix for all your resources"
+  description = "Your pod's suffix for all created resources"
   type        = string
 }
 
@@ -65,11 +65,11 @@ variable "cc_vm_prov_url" {
 }
 
 variable "secret_username" {
-  description = "AWS Secrets Manager Username for Cloud Connector provisioning"
+  description = "Module 2 to 4: Pod Username"
   type        = string
 }
 variable "secret_password" {
-  description = "AWS Secrets Manager Password for Cloud Connector provisioning"
+  description = "Module 2 to 4: Pod Password"
   type        = string
 }
 variable "secret_apikey" {
@@ -173,13 +173,25 @@ variable "zpa_customer_id" {
 }
 
 variable "client_username" {
-  description = "Client Connector Username"
+  description = "Module 1: ZPA Client Connector Username"
   type = string
-  default = "aws1.zstest.net"
+  default = "user1.zstest.net"
 }
 
 variable "client_password" {
-  description = "Client Connector Password"
+  description = "Module 1: ZPA Client Connector Password"
+  type = string
+  default = "CloudConnector2023!"
+}
+
+variable "mod1_zpa_admin_username" {
+  description = "Module 1: ZPA Portal Admin Username"
+  type = string
+  default = "admin1.zstest.net"
+}
+
+variable "mod1_zpa_admin_password" {
+  description = "Module 1: ZPA Portal Admin Password"
   type = string
   default = "CloudConnector2023!"
 }
