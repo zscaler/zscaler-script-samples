@@ -12,14 +12,14 @@ data "aws_vpc" "selected" {
 #   }
 # }
 
-data "aws_ami" "win2016" {
+data "aws_ami" "win2022" {
   # executable_users = ["self"]
   most_recent      = true
   owners           = ["self"]
 
   filter {
     name   = "name"
-    values = ["packer-windows-2016*"]
+    values = ["packer-windows-2022-arohyans-1688393662"]
   }
 
   filter {
