@@ -110,7 +110,7 @@ resource "aws_iam_instance_profile" "workload_win_host_profile" {
 
 resource "aws_instance" "workload" {
   count                       = 1
-  ami                         = data.aws_ami.win2016.id
+  ami                         = data.aws_ami.win2022.id
   instance_type               = var.instance_type
   key_name                    = var.instance_key
   subnet_id                   = element(var.subnet,count.index)
