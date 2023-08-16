@@ -1,0 +1,252 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Zscaler Cloud Connector
+
+Metadata:
+  LICENSE: 'Apache License, Version 2.0'
+  'AWS::CloudFormation::Interface':
+    ParameterGroups:
+      - Label:
+          default: Cloud Connector Macro Function
+        Parameters:
+          - Macro
+      - Label:
+          default: Bastion Security
+        Parameters:
+          - MyIP
+      - Label:
+          default: Cloud Connector Secrets (AWS Secrets Manager)
+        Parameters:
+          - CcApiKey
+          - CcUser
+          - CcPass
+      - Label:
+          default:  Cloud Connector Provisioning Configuration
+        Parameters:
+          - ZscalerOSAMI
+          - KeyPairName
+          - CloudConnectorProvUrl
+      - Label:
+          default: "VPC Environment Names"
+        Parameters:
+          - AppEnvironmentName
+          - WorkloadEnvironmentName
+      - Label:
+          default: "ZPA Details"
+        Parameters:
+          - ZpaProvisioningKey
+      - Label:
+          default: "DNS Domain Zone Details"
+        Parameters:
+          - MyDnsZone
+          - MyRegion
+    ParameterLabels:
+      MyIP:
+        default: "My IP address. Do NOT include /32 at the end as this will be added automatically"
+      Macro:
+        default: Deploy Cloud Connector Macro
+      KeyPairName:
+        default: Zscaler Cloud Connector instance key pair
+      ZscalerOSAMI:
+        default: Zscaler product
+      CloudConnectorProvUrl:
+        default: Cloud Connector Provisioning URL
+      CcApiKey:
+        default: Cloud Connector API Key
+      CcUser:
+        default: Cloud Connector Provisioning Username
+      CcPass:
+        default: Cloud Connector Provisioning Password
+      AppEnvironmentName:
+        default: "Name of the self-contained environment"
+      ZpaProvisioningKey:
+        default: "ProvisioningKey"
+      MyDnsZone:
+        default: "Type an internal domain name for your DNS Zone"
+      MyRegion:
+        default: "Select the Region where this lab will be deployed"
+      WorkloadEnvironmentName:
+        default: "Name of the self-contained environment"
+  cfn-lint:
+    config:
+      ignore_checks:
+        - E9007
+        - W4001
+        - W7001
+        - W8001
+        - E2507
+        - E2522
+        - E6002
+
+
+Parameters:
+  MyIP:
+    Description: >
+      My IP address
+    Type: String
+    Default: '0.0.0.0'
+  Macro:
+    Description: Keep value as true unless ZSS-MACRO already deployed into same Region in this AWS Account
+    Type: String
+    Default: true
+    AllowedValues:
+      - true
+      - false
+  CcApiKey:
+    NoEcho: true
+    Description: Cloud Connector API Key obtained from Cloud Connector Admin Console
+    Type: String
+  CcUser:
+    NoEcho: true
+    Description: Cloud Connector Provisioning Username obtained from Cloud Connector Admin Console (such as cloudconnectors@yourdomain.com)
+    Type: String
+  CcPass:
+    NoEcho: true
+    Description: Cloud Connector Provisioning Password obtained from Cloud Connector Admin Console
+    Type: String
+  KeyPairName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: EC2 Instance Access KeyPair
+  CloudConnectorProvUrl:
+    AllowedPattern: '(admin|connector).zs.*.net(/ec)?/w?api/v1/provUrl\?name=[\w-_]+'
+    ConstraintDescription: >-
+      Please input the Cloud Connector Provisioning Template URL to use from
+      your Zscaler Cloud Connector Portal
+    Description: Cloud Connector Prov URL
+    Type: String
+  SecretManagerSecretName:
+    Type: String
+    Description: >-
+      Secret Manager Secret Name, defaults to ZS/CC/credentials
+  EnableCrossZoneLB:
+    Type: String
+    AllowedValues:
+      - false
+      - true
+    Default: true
+    Description: Enable Cross Zone GWLB operation
+  AppEnvironmentName:
+    Description: > 
+      An environment name that is prefixed to Application VPC resource names
+    Type: String
+    Default: ZPACCLAB-APPVPC
+  ZpaProvisioningKey:
+      Description: The ZPA provisioning key to use
+      Type: String
+      ConstraintDescription: As copied from ZPA UI - do not add extra characters or double quotes!
+  MyRegion:
+    Description: >
+      Region for App Connector
+    Type: String
+    AllowedValues:
+      - us-east-2
+      - us-east-1
+      - us-west-1
+      - us-west-2
+      - af-south-1
+      - ap-east-1
+      - ap-south-2
+      - ap-southeast-3
+      - ap-south-1
+      - ap-northeast-3
+      - ap-northeast-2
+      - ap-northeast-1
+      - ap-southeast-1
+      - ap-southeast-2
+      - ca-central-1
+      - eu-central-1
+      - eu-west-1
+      - eu-west-2
+      - eu-south-1
+      - eu-west-3
+      - eu-south-2
+      - eu-north-1
+      - eu-central-2
+      - me-south-1
+      - me-central-1
+      - sa-east-1
+      - us-gov-east-1
+      - us-gov-west-1
+  MyDnsZone:
+    Description: > 
+      Domain for DNS Zone
+    Type: String
+    Default: "mytestdomain.com"
+  WorkloadEnvironmentName:
+    Description: > 
+      An environment name that is prefixed to Workload VPC resource names
+    Type: String
+    Default: ZPACCLAB-WORKLOADVPC
+
+Conditions:
+    isMacro: !Equals [!Ref Macro, true]
+    isNotMacro: !Not [Condition: isMacro]
+
+Resources:
+
+  ZSCALERVPC:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://zsccpovtemplate.s3.amazonaws.com/cft-nested-deploy/zscalervpc.yaml
+      Parameters:
+          MyRegion:
+              Ref: MyRegion
+          KeyPairName:
+              Ref: KeyPairName
+          MyIP:
+              Ref: MyIP   
+
+  ZSCCSecrets:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: ZSCALERVPC
+    Properties:
+      TemplateURL: https://zsccpovtemplate.s3.amazonaws.com/cft-nested-deploy/zscalersecrets.yaml
+      Parameters:
+          CcApiKey:
+              Ref: CcApiKey
+          CcUser:
+              Ref: CcUser
+          CcPass:
+              Ref: CcPass
+          SecretManagerSecretName:
+              Ref: SecretManagerSecretName
+
+  ZSCCMacro:
+    Type: AWS::CloudFormation::Stack
+    Condition: isMacro
+    DependsOn: ZSCCSecrets
+    Properties:
+      TemplateURL: https://zsccpovtemplate.s3.amazonaws.com/cft-nested-deploy/zscalermacro.yaml
+    
+  CLOUDCONNECTORS:
+    Type: AWS::CloudFormation::Stack
+    Condition: isMacro
+    DependsOn: 
+      - ZSCCMacro
+      - ZSCCSecrets
+    Properties:
+      TemplateURL: https://zsccpovtemplate.s3.amazonaws.com/cft-nested-deploy/zscalercloudconnectors.yaml
+      Parameters:
+          KeyPairName:
+              Ref: KeyPairName
+          VPCID: !Sub ${WORKLOADVPC.Outputs.VPC}
+          CCSubnetID: !Sub ${WORKLOADVPC.Outputs.CCSubnetID}
+          CloudConnectorProvUrl:
+              Ref: CloudConnectorProvUrl
+          SecretManagerSecretName:
+              Ref: SecretManagerSecretName
+
+  CLOUDCONNECTORSNOMACRO:
+    Type: AWS::CloudFormation::Stack
+    Condition: isNotMacro
+    DependsOn: ZSCCSecrets
+    Properties:
+      TemplateURL: https://zsccpovtestcft.s3.amazonaws.com/zscalercloudconnectors.yaml
+      Parameters:
+          KeyPairName:
+              Ref: KeyPairName
+          VPCID: !Sub ${WORKLOADVPC.Outputs.VPC}
+          CCSubnetID: !Sub ${WORKLOADVPC.Outputs.CCSubnetID}
+          CloudConnectorProvUrl:
+              Ref: CloudConnectorProvUrl
+          SecretManagerSecretName:
+              Ref: SecretManagerSecretName
