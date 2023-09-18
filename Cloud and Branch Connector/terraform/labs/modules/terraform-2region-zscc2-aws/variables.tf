@@ -40,7 +40,7 @@ variable "user_data" {
 
 variable "ccvm_instance_type" {
   description = "Cloud Connector Instance Type"
-  default     = "m5.large"
+  default     = "c5a.large"
   validation {
           condition     = ( 
             var.ccvm_instance_type == "t3.medium"  ||
