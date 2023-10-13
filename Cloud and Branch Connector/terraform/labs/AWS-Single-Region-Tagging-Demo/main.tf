@@ -296,7 +296,7 @@ resource "aws_route_table" "workload-rt" {
 # Create GWLB in all CC subnets. Create Target Group and attach primary service IP from all created Cloud
 # Connectors as registered targets.
 module "gwlb" {
-  source                  = "../modules/terraform-zsgwlb-aws"
+  source                  = "../modules/terraform-zsgwlb-aws-tagging"
   name_prefix             = var.name_prefix
   resource_tag            = var.name_suffix
   global_tags             = local.global_tags
@@ -311,7 +311,7 @@ module "gwlb" {
 }
 # Create Endpoint Service associated with GWLB and 1x GWLB Endpoint per CC subnet
 module "gwlb-endpoint" {
-  source                  = "../modules/terraform-zsgwlbendpoint-aws"
+  source                  = "../modules/terraform-zsgwlbendpoint-aws-tagging"
   name_prefix             = var.name_prefix
   resource_tag            = var.name_suffix
   global_tags             = local.global_tags
