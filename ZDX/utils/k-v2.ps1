@@ -32,11 +32,11 @@ while ($true) {
 
 
     
-        # Connect to Good-Wifi
+    # Connect to Good-Wifi
     stop-process -name "clumsy" -Force
     Write-Host "*******Connecting to GOOD Wifi******";
-        netsh wlan connect ssid=Google_Nest name=Google_Nest; Start-Sleep -Seconds 6
-        #Write-Host "*******Time remaining: 30 minutes ******"
+    netsh wlan connect ssid=Google_Nest name=Google_Nest; Start-Sleep -Seconds 6
+    #Write-Host "*******Time remaining: 30 minutes ******"
 
     Write-Host ("Current time: " + (Get-Date -Format 'HH:mm'))
     Write-Host ("Staying connected for " + $sleepTime1/60/60 + " hours")
