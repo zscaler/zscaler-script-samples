@@ -16,7 +16,7 @@ while ($true) {
     Write-Host ("Staying connected for " + $sleepTime2/60/60 + " hours")
     
     # Slow the network part using Clumsy 
-    $slow_clumsy_options = 200, 600, 400, 700, 100, 20, 5, 250, 150, 60 
+    $slow_clumsy_options = 200, 303, 400, 350, 100, 20, 5, 250, 150, 60 
     $slowdown = $slow_clumsy_options | Get-Random 
     $var1 = "C:\clumsy\clumsy.exe"
     $var2 = "--filter outbound --lag on --lag-time " + $slowdown
