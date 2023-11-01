@@ -132,7 +132,7 @@ resource "aws_security_group_rule" "all-vpc-ingress-cc" {
 # Create Cloud Connector VM
 resource "aws_instance" "cc-vm" {
   count = local.valid_cc_create ? var.cc_count : 0
-  ami                         = data.aws_ami.cloudconnector.id
+  ami                         = "ami-03e4e2d7e54e68877"
   instance_type               = var.ccvm_instance_type
   iam_instance_profile        = aws_iam_instance_profile.cc-host-profile.*.name[count.index]
   vpc_security_group_ids      = [aws_security_group.cc-mgmt-sg.*.id[count.index]]

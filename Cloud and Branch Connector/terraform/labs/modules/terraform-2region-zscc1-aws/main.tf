@@ -16,17 +16,17 @@ provider "aws" {
   secret_key = var.aws_secret_key
 }
 
-# Locate current CC AMI by product code
-data "aws_ami" "cloudconnector" {
-  most_recent = true
+# # Locate current CC AMI by product code
+# data "aws_ami" "cloudconnector" {
+#   most_recent = true
 
-  filter {
-    name   = "product-code"
-    values = ["2l8tfysndbav4tv2nfjwak3cu"]
-  }
+#   filter {
+#     name   = "product-code"
+#     values = ["2l8tfysndbav4tv2nfjwak3cu"]
+#   }
 
-  owners = ["aws-marketplace"]
-}
+#   owners = ["aws-marketplace"]
+# }
 
 
 # Create IAM role and instance profile w/ SSM and Secrets Manager access policies
@@ -132,7 +132,7 @@ resource "aws_security_group_rule" "all-vpc-ingress-cc" {
 # Create Cloud Connector VM
 resource "aws_instance" "cc-vm" {
   count = local.valid_cc_create ? var.cc_count : 0
-  ami                         = data.aws_ami.cloudconnector.id
+  ami                         = "ami-04caaf33a58ecc395"
   instance_type               = var.ccvm_instance_type
   iam_instance_profile        = aws_iam_instance_profile.cc-host-profile.*.name[count.index]
   vpc_security_group_ids      = [aws_security_group.cc-mgmt-sg.*.id[count.index]]
