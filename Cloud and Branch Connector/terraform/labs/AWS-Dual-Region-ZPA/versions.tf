@@ -17,7 +17,7 @@ terraform {
     }
     zpa = {
       source  = "zscaler/zpa"
-      version = "2.7.7"
+      version = "3.0.0"
     }
   }
   required_version = ">= 0.13"
