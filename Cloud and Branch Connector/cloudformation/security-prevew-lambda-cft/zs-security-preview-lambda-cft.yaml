@@ -1,0 +1,76 @@
+#If I keep the S3 bucket screenshot, need to update the permissions, maybe even create an S3 bucket, and also set the js file s3 bucket variable as CFT labmda environment variable
+#Change name of lambda function too
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: Select the VPC for the Lambda function
+  SubnetId:
+    Type: AWS::EC2::Subnet::Id
+    Description: Select the subnet for the Lambda function
+  SecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: Select the security group for the Lambda function
+  CodeS3Bucket:
+    Type: String
+    Description: S3 bucket name where the Lambda code zip file is located
+  CodeS3Key:
+    Type: String
+    Description: S3 key of the Lambda code zip file
+    Default: 'securitypreview-lambda.zip'
+
+Resources:
+  ExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-Role'
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: !Sub '${AWS::StackName}-VpcAccessPolicy'
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:CreateNetworkInterface
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:DeleteNetworkInterface
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "arn:aws:logs:*:*:*"
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeVpcs
+                  - ec2:DescribeSubnets
+                  - ec2:DescribeSecurityGroups
+                Resource: "*"
+  LambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-SecurityPreview' 
+      Runtime: nodejs18.x
+      Handler: index.handler
+      Code:
+        S3Bucket: !Ref CodeS3Bucket
+        S3Key: !Ref CodeS3Key
+      Timeout: 300
+      MemorySize: 512
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref SecurityGroupId
+        SubnetIds:
+          - !Ref SubnetId
+      Role: !GetAtt ExecutionRole.Arn
