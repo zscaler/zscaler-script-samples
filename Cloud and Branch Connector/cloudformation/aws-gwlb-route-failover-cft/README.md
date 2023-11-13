@@ -18,12 +18,12 @@ The script also creates a lambda execution role with least privilege permissions
 
 1. Download aws-gwlb-failover-rt-cft.yaml
 1. Deploy a new CloudFormation stack in AWS using the include CFT (aws-gwlb-failover-rt-cft.yaml)
-1. Specify the Route Table IDs that will route to the Cloud Connectors in Subnets/AZs 1 and 2
-1. Specify the NAT Gateway IDs that will be used for the fail-open scenario in Subnets/AZs 1 and 2
-1. Specify the Gateway Load Balancer VPC IDs (deployed with Zscaler) for normal operations in Subnets/AZs 1 and 2
-1. Specify the GWLB Target Group ARN
-1. Specify the GWLB Target Group Name. This is basically just going to be the Target Group ID from the ARN with "gwy/" prefix
-1. Specify the Load Balancer Name
+1. Specify the Route Table IDs that will route to the Cloud Connectors in Subnets/AZs 1 and 2 (AWS Console > VPC > Route Tables)
+1. Specify the NAT Gateway IDs that will be used for the fail-open scenario in Subnets/AZs 1 and 2 (AWS Console > VPC > NAT Gateways)
+1. Specify the Gateway Load Balancer VPC IDs (deployed with Zscaler) for normal operations in Subnets/AZs 1 and 2 (AWS Console > VPC > Endpoints)
+1. Specify the GWLB Target Group ARN (AWS Console > EC2 > Target Groups)
+1. Specify the GWLB Target Group Name (take the GWLB Target Group ARN and remove "arn:aws:elasticloadbalancing:<region>:<account>:targetgroup/")
+1. Specify the Load Balancer Name (AWS Console > VPC > Endpoint services and remove "arn:aws:elasticloadbalancing:<region>:<account>:loadbalancer/")
 
 ## **Instructions to Test Fail-Over**
 1. Make sure there is at least 1 healthy Cloud Connector
