@@ -23,7 +23,7 @@ The script also creates a lambda execution role with least privilege permissions
 1. Specify the Gateway Load Balancer VPC IDs (deployed with Zscaler) for normal operations in Subnets/AZs 1 and 2 (AWS Console > VPC > Endpoints)
 1. Specify the GWLB Target Group ARN (AWS Console > EC2 > Target Groups)
 1. Specify the GWLB Target Group Name (take the GWLB Target Group ARN and remove "arn:aws:elasticloadbalancing:<region>:<account>:targetgroup/")
-1. Specify the Load Balancer Name (AWS Console > VPC > Endpoint services and remove "arn:aws:elasticloadbalancing:<region>:<account>:loadbalancer/")
+1. Specify the Load Balancer Name (AWS Console > EC2 > Load Balancers and remove "arn:aws:elasticloadbalancing:<region>:<account>:loadbalancer/")
 
 ## **Instructions to Test Fail-Over**
 1. Make sure there is at least 1 healthy Cloud Connector
