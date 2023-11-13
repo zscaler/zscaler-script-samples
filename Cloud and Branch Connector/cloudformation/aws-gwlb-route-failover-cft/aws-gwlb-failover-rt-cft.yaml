@@ -40,7 +40,6 @@ Parameters:
       NATGWID2:
         Type: String
         Description: NAT Gateway ID for Subnet/AZ 2
-        Default: "nat-01e7956f0d906eff2"
       VPCE1:
         Type: String
         Description: GWLB VPC Endpoint for Subnet/AZ 1
