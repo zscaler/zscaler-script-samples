@@ -30,40 +30,32 @@ Metadata:
 Parameters:
       RT1:
         Type: String
-        Description: Something
-        Default: "rtb-0c7612059bc4f2a3a"
+        Description: Route Table ID to change for Subnet/AZ 1
       RT2:
         Type: String
-        Description: Something
-        Default: "rtb-0a808204eb1d32ee3"
+        Description: Route Table ID to change for Subnet/AZ 2
       NATGWID1:
         Type: String
-        Description: Something
-        Default: "nat-01e7956f0d906eff2"
+        Description: NAT Gateway ID for Subnet/AZ 1
       NATGWID2:
         Type: String
-        Description: Something
+        Description: NAT Gateway ID for Subnet/AZ 2
         Default: "nat-01e7956f0d906eff2"
       VPCE1:
         Type: String
-        Description: Something
-        Default: "vpce-04ee881ba5d2bacd0"
+        Description: GWLB VPC Endpoint for Subnet/AZ 1
       VPCE2:
         Type: String
-        Description: Something
-        Default: "vpce-04ee881ba5d2bacd0"
+        Description: GWLB VPC Endpoint for Subnet/AZ 2
       TARGETGROUPARN:
         Type: String
-        Description: GWLB Target Group Arn for Lambda python script
-        Default: "arn:aws:elasticloadbalancing:us-east-1:494789115339:targetgroup/ZSCCGWLBTargetGroup-0a768ab51773/00dcbf72f223cb7e7d"
+        Description: 'GWLB Target Group Arn (example: arn:aws:elasticloadbalancing:<region>:<account>:targetgroup/ZSCCGWLBTargetGroup-12345/67890)'
       TARGETGROUPNAME:
         Type: String
-        Description: CloudWatch Metric for CC GWLB TargetGroup Name
-        Default: "targetgroup/ZSCCGWLBTargetGroup-0a768ab51773/00dcbf72f223cb7e7d"
+        Description: 'CC GWLB Target Group name (example: targetgroup/ZSCCGWLBTargetGroup-12345/67890)'
       LB:
         Type: String
-        Description: CloudWatch Metric for LoadBalancer name
-        Default: "gwy/ZSCCGWLB-0a768ab51773/ecc8fde1afe4a001"
+        Description: 'CC LoadBalancer name (example: gwy/ZSCCGWLB-12345/67890)'
 
 Resources:
 
