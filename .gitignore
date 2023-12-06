@@ -182,3 +182,4 @@ terraform.tfstate
 *.txt
 terraform.tfstate.backup
 terraform.tfstate.lock.info
+*.tfvars
