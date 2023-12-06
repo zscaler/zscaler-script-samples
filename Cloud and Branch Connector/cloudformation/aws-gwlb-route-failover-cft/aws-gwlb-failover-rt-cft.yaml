@@ -1,0 +1,222 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Zscaler Cloud Connector Auto Scaling Group Template
+
+Metadata:
+  LICENSE: 'Apache License, Version 2.0'
+  'AWS::CloudFormation::Interface':
+    ParameterGroups:
+      - Label:
+          default: Route Tables
+        Parameters:
+          - RT1
+          - RT2
+      - Label:
+          default: NAT Gateways
+        Parameters:
+          - NATGWID1
+          - NATGWID2
+      - Label:
+          default: GWLB VPC Endpoints
+        Parameters:
+          - VPCE1
+          - VPCE2
+      - Label:
+          default: Gateway Load Balancer
+        Parameters:
+          - TARGETGROUPARN
+          - TARGETGROUPNAME
+          - LB
+
+Parameters:
+      RT1:
+        Type: String
+        Description: Route Table ID to change for Subnet/AZ 1
+      RT2:
+        Type: String
+        Description: Route Table ID to change for Subnet/AZ 2
+      NATGWID1:
+        Type: String
+        Description: NAT Gateway ID for Subnet/AZ 1
+      NATGWID2:
+        Type: String
+        Description: NAT Gateway ID for Subnet/AZ 2
+      VPCE1:
+        Type: String
+        Description: GWLB VPC Endpoint for Subnet/AZ 1
+      VPCE2:
+        Type: String
+        Description: GWLB VPC Endpoint for Subnet/AZ 2
+      TARGETGROUPARN:
+        Type: String
+        Description: 'GWLB Target Group Arn (example: arn:aws:elasticloadbalancing:<region>:<account>:targetgroup/ZSCCGWLBTargetGroup-12345/67890)'
+      TARGETGROUPNAME:
+        Type: String
+        Description: 'CC GWLB Target Group name (example: targetgroup/ZSCCGWLBTargetGroup-12345/67890)'
+      LB:
+        Type: String
+        Description: 'CC LoadBalancer name (example: gwy/ZSCCGWLB-12345/67890)'
+
+Resources:
+
+  LambdaExecutionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: !Sub '${AWS::StackName}-ExecutionRole'
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      Policies:
+        - PolicyName: !Sub '${AWS::StackName}-LambdaPolicy'
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "ec2:ReplaceRoute"
+                Resource:
+                  - !Sub "arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:route-table/${RT1}"
+                  - !Sub "arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:route-table/${RT2}"
+              - Effect: "Allow"
+                Action:
+                  - "cloudwatch:DescribeAlarms"
+                Resource:
+                  - !Sub "arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:alarm/${CloudWatchAlarm}"
+              - Effect: "Allow"
+                Action:
+                  - "elasticloadbalancing:Describe*"
+                Resource:
+                  - "*"
+
+  LambdaFunction:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: !Sub '${AWS::StackName}-LambdaFunction'
+      Runtime: "python3.11"
+      Handler: index.lambda_handler
+      Code:
+        ZipFile: |
+          import os
+          import boto3
+
+          def lambda_handler(event, context):
+              # Specify the Route Table ID, NAT Gateway ID, and GWLB VPC Endpoint ID
+              route_table_id1 = os.environ.get('route_table_id1')
+              nat_gateway_id1 = os.environ.get('nat_gateway1')
+              gwlb_vpc_endpoint_id1 = os.environ.get('vpc_endpoint1')
+              route_table_id2 = os.environ.get('route_table_id2')
+              nat_gateway_id2 = os.environ.get('nat_gateway2')
+              gwlb_vpc_endpoint_id2 = os.environ.get('vpc_endpoint2')
+              target_group_arn = os.environ.get('target_group_arn')
+              # Create a GWLB client
+              gwlb_client = boto3.client('elbv2')
+              response = gwlb_client.describe_target_health(
+                  TargetGroupArn=target_group_arn)
+              healthy_targets = 0
+              
+              #Loop through target health descriptions
+              for target_health_description in response['TargetHealthDescriptions']:
+                  if target_health_description['TargetHealth']['State'] == 'healthy':
+                      healthy_targets +=1
+              
+              print(f"Number of healthy targets in the target group: {healthy_targets}")
+
+              if healthy_targets == 0:
+                  # Create an EC2 client
+                  ec2_client = boto3.client('ec2')
+
+                  # Update route table 1 to point to NATGW1
+                  response = ec2_client.replace_route(
+                      RouteTableId=route_table_id1,
+                      DestinationCidrBlock='0.0.0.0/0',
+                      NatGatewayId=nat_gateway_id1
+                  )
+                  print(f"Route table {route_table_id1} updated successfully to use NAT Gateway to bypass Zscaler.")
+
+                  # Update route table 2 to point to NATGW2
+                  response = ec2_client.replace_route(
+                      RouteTableId=route_table_id2,
+                      DestinationCidrBlock='0.0.0.0/0',
+                      NatGatewayId=nat_gateway_id2
+                  )
+                  print(f"Route table {route_table_id2} updated successfully to use NAT Gateway to bypass Zscaler.")
+              else:
+                  # Create an EC2 client
+                  ec2_client = boto3.client('ec2')
+
+                  # Update route table 1 to point to GWLBE1
+                  response = ec2_client.replace_route(
+                      RouteTableId=route_table_id1,
+                      DestinationCidrBlock='0.0.0.0/0',
+                      VpcEndpointId=gwlb_vpc_endpoint_id1
+                  )
+                  print(f"Route table {route_table_id1} updated successfully to use GWLB Endpoint with Cloud Connectors.")
+
+                  # Update route table 2 to point to GWLBE2
+                  response = ec2_client.replace_route(
+                      RouteTableId=route_table_id2,
+                      DestinationCidrBlock='0.0.0.0/0',
+                      VpcEndpointId=gwlb_vpc_endpoint_id2
+                  )
+                  print(f"Route table {route_table_id2} updated successfully to use GWLB Endpoint with Cloud Connectors.")
+
+              return healthy_targets
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 60
+      Environment:
+        Variables:
+          route_table_id1: !Ref RT1
+          route_table_id2: !Ref RT2
+          nat_gateway1: !Ref NATGWID1
+          nat_gateway2: !Ref NATGWID2
+          vpc_endpoint1: !Ref VPCE1
+          vpc_endpoint2: !Ref VPCE2
+          target_group_arn: !Ref TARGETGROUPARN
+
+  SNSNotificationTopic:
+    Type: "AWS::SNS::Topic"
+    Properties:
+      TopicName: !Sub '${AWS::StackName}-SnsTopic'
+
+  LambdaPermission:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      FunctionName: !Ref LambdaFunction
+      Action: "lambda:InvokeFunction"
+      Principal: "sns.amazonaws.com"
+      SourceArn: !Ref SNSNotificationTopic
+
+  LambdaSubscription:
+    Type: "AWS::SNS::Subscription"
+    Properties:
+      TopicArn: !Ref SNSNotificationTopic
+      Protocol: "lambda"
+      Endpoint: !GetAtt LambdaFunction.Arn
+
+  CloudWatchAlarm:
+    Type: "AWS::CloudWatch::Alarm"
+    Properties:
+      AlarmName: !Sub '${AWS::StackName}-CloudWatchAlarm'
+      AlarmDescription: "CloudWatch Alarm for GatewayELB healthhostcount"
+      Namespace: "AWS/GatewayELB"
+      MetricName: "HealthyHostCount"
+      Dimensions:
+        - Name: "TargetGroup"
+          Value: !Ref TARGETGROUPNAME
+        - Name: "LoadBalancer"
+          Value: !Ref LB
+      Statistic: "Minimum"
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: "LessThanThreshold"
+      AlarmActions:
+        - Ref: "SNSNotificationTopic"
+      OKActions:
+        - Ref: "SNSNotificationTopic"
