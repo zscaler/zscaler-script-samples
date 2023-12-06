@@ -856,7 +856,7 @@ provider "zpa" {
   zpa_client_id = var.zpa_client_id
   zpa_client_secret = var.zpa_client_secret
   zpa_customer_id = var.zpa_customer_id
-  zpa_cloud = "BETA"
+  #zpa_cloud = "BETA"
 }
 
 # Create the App Connector Group

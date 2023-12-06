@@ -88,7 +88,7 @@ output "zia_portal" {
     value = "https://admin.${var.cloudname}"
 }
 output "zpa_portal" {
-    value = "https://admin.zpabeta.net"
+    value = "https://admin.private.zscaler.com"
 }
 output "cc_portal" {
     value = "https://connector.${var.cloudname}"
