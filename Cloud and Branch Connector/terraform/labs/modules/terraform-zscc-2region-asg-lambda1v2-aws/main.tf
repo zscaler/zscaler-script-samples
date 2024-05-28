@@ -170,6 +170,7 @@ resource "aws_lambda_function" "asg_lambda_function" {
   role             = aws_iam_role.asg_lambda_iam_role.arn
   timeout          = 180
   memory_size      = 256
+  architectures = [var.architecture]
 
   environment {
     variables = {
@@ -178,6 +179,8 @@ resource "aws_lambda_function" "asg_lambda_function" {
       SECRET_NAME            = var.secret_name
       HC_DATA_POINTS         = "10"
       HC_UNHEALTHY_THRESHOLD = "7"
+      HC_UNHEALTHY_CONTIGUOUS_DP   = "5"  # continuous unhealthy datapoint counts
+      MISSING_DATAPOINTS_UNHEALTHY = true # treat missing datapoints as unhealthy
     }
   }
 
