@@ -71,10 +71,12 @@ variable "secret_username" {
 variable "secret_password" {
   description = "AWS Secrets Manager Password for Cloud Connector provisioning"
   type        = string
+  sensitive   = true
 }
 variable "secret_apikey" {
   description = "AWS Secrets Manager API Key for Cloud Connector provisioning"
   type        = string
+  sensitive   = true
 }
 
 variable "ccvm_instance_type" {
@@ -139,6 +141,7 @@ variable "aws_access_key" {
 variable "aws_secret_key" {
   description = "AWS Secret Key"
   type = string
+  sensitive = true
 }
 variable "ac_count" {
   description = "Default number of App Connector appliances to create"
@@ -171,6 +174,7 @@ variable "zpa_client_id" {
 variable "zpa_client_secret" {
   description = "ZPA Client Secret"
   type = string
+  sensitive   = true
 }
 
 variable "zpa_customer_id" {
