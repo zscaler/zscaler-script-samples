@@ -80,8 +80,8 @@ variable "secret_apikey" {
 }
 
 variable "ccvm_instance_type" {
-  description = "Cloud Connector Instance Type (M5.large is recommended)"
-  default     = "c5a.large"
+  description = "Cloud Connector Instance Type (M6i.large is recommended)"
+  default     = "m6i.large"
   validation {
           condition     = ( 
             var.ccvm_instance_type == "t3.medium"  ||
@@ -91,7 +91,8 @@ variable "ccvm_instance_type" {
             var.ccvm_instance_type == "m5.2xlarge" ||
             var.ccvm_instance_type == "c5.2xlarge" ||
             var.ccvm_instance_type == "m5.4xlarge" ||
-            var.ccvm_instance_type == "c5.4xlarge"
+            var.ccvm_instance_type == "c5.4xlarge" ||
+            var.ccvm_instance_type == "m6i.large"
           )
           error_message = "Input ccvm_instance_type must be set to an approved vm instance type."
       }
@@ -100,7 +101,7 @@ variable "ccvm_instance_type" {
 variable "owner_tag" {
   description = "Custom owner tag attributes"
   type = string
-  default = "EaaS"
+  default = "arohyans@zscaler.com"
 }
 
 variable "tls_key_algorithm" {
