@@ -71,7 +71,7 @@ variable "secret_username" {
 variable "secret_password" {
   description = "AWS Secrets Manager Password for Cloud Connector provisioning"
   type        = string
-  sensitive   = true
+  #sensitive   = true
 }
 variable "secret_apikey" {
   description = "AWS Secrets Manager API Key for Cloud Connector provisioning"
