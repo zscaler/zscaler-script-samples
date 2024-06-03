@@ -864,8 +864,8 @@ resource "zpa_app_connector_group" "aws_app_connector_group" {
   name                     = "zscc-Region1-App-Connector-Group-${var.name_suffix}"
   description              = "Region1 App Connector Group"
   enabled                  = true
-  latitude                 = "37.3382082"
-  longitude                = "-121.8863286"
+  latitude                 = "37.33874"
+  longitude                = "-121.8852525"
   location                 = "San Jose, CA, USA"
   upgrade_day              = "SUNDAY"
   upgrade_time_in_secs     = "66600"
