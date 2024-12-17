@@ -7,7 +7,7 @@ During runtime, the integration periodically (by default, every 5 minutes) check
 ## Requirements
 - Zscaler Deception
 - A subscription to AWS GuardDuty with an active Detector
-- Access to AWS CloudFormation with permission to create a CloudWatch rule and Lambda Function with the following permissions:
+- Access to AWS CloudFormation with permission to create a CloudWatch Rule and Lambda Function with the following permissions:
     - logs:CreateLogGroup
     - logs:CreateLogStream
     - logs:PutLogEvents
@@ -43,7 +43,7 @@ You can verify script execution in several ways:
  - Directly from CloudWatch logs
  - From the Lambda Function itself (use the Test tab to verify the script can be manually executed and results in a 200 success)
  - From the GuardDuty Overview page (verify that new Findings appear within the dashboard)
- - From the S3 Bucket (verify that *.txt files are placed in this bucket by the Lambda function).
+ - From the S3 Bucket (verify that *.txt files are placed in this bucket by the Lambda function)
 
 # Patch Notes
 Initial Release: 16 December, 2024
