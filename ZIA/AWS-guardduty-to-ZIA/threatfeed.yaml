@@ -1,0 +1,127 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Deploys a Lambda function that queries AWS GuardDuty and imports identified threats into the Zscaler Firewall at the user-specified interval.
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterLabels:
+      ZscalerSecretName:
+        default: "Zscaler Secret Name"
+      LambdaScheduleInterval:
+        default: "Lambda Schedule Interval (in minutes)"
+      S3BucketName:
+        default: "S3 Bucket Name"
+      S3ObjectKey:
+        default: "S3 Key"
+
+Parameters:
+  ZscalerSecretName:
+    Type: String
+    Default: "ZscalerCredentials"
+    Description: "The name of the AWS Secrets Manager secret that contains Zscaler credentials. The script will use these credentials to create new FQDN/IP Destination Groups as well as Firewall policy"
+
+  LambdaScheduleInterval:
+    Type: Number
+    Default: 5
+    Description: "The interval (in minutes) to trigger the threatfeed function (minimum 1)."
+    MinValue: 1
+
+  S3BucketName:
+    Type: String
+    Default: zscalerlambdafiles
+    Description: "The S3 bucket where the ZIP file is stored."
+
+  S3ObjectKey:
+    Type: String
+    Default: lambda_guardduty_threatfeed.zip
+    Description: "The path (key) to the ZIP file in the S3 bucket."
+
+Resources:
+  # IAM Role for Lambda
+  LambdaExecutionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: "LambdaPermissions"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              # Access to Secrets Manager to get Zscaler credentials
+              - Effect: "Allow"
+                Action:
+                  - "secretsmanager:GetSecretValue"
+                Resource: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${ZscalerSecretName}*"
+
+              # Access to CloudWatch Logs
+              - Effect: "Allow"
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
+
+              # Access to AWS GuardDuty (List Detectors, List Findings, Get Findings)
+              - Effect: "Allow"
+                Action:
+                  - "guardduty:ListDetectors"
+                  - "guardduty:ListFindings"
+                  - "guardduty:GetFindings"
+                Resource: !Sub "arn:aws:guardduty:${AWS::Region}:${AWS::AccountId}:detector/*"
+
+              # Access to AWS Events for CloudWatch Rule Creation
+              - Effect: "Allow"
+                Action:
+                  - "events:PutRule"
+                  - "events:PutTargets"
+                  - "events:RemoveTargets"
+                  - "events:DeleteRule"
+                Resource: !Sub "arn:aws:events:${AWS::Region}:${AWS::AccountId}:rule/*"
+
+              # Allow Lambda to pass its role to services
+              - Effect: "Allow"
+                Action:
+                  - "iam:PassRole"
+                Resource: !Sub "arn:aws:iam::${AWS::AccountId}:role/*"
+
+  # Lambda Function
+  ZscalerLambdaFunction:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      FunctionName: "guardduty-zscaler-zia-threatfeed"
+      Handler: "lambda_function.lambda_handler"
+      Runtime: "python3.9"
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        S3Bucket: !Ref S3BucketName
+        S3Key: !Ref S3ObjectKey
+      Timeout: 900
+      MemorySize: 256
+      Environment:
+        Variables:
+          ZSCALER_SECRET_NAME: !Ref ZscalerSecretName
+
+  # CloudWatch Rule to trigger Lambda on a schedule
+  LambdaTriggerRule:
+    Type: "AWS::Events::Rule"
+    Properties:
+      ScheduleExpression: !Sub "rate(${LambdaScheduleInterval} minutes)"
+      State: "ENABLED"
+      Targets:
+        - Arn: !GetAtt ZscalerLambdaFunction.Arn
+          Id: "GuardDuty-to-ZscalerLambdaTrigger"
+
+  # Permission to allow CloudWatch Rule to trigger Lambda
+  LambdaPermissionForCloudWatch:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      FunctionName: !Ref ZscalerLambdaFunction
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt LambdaTriggerRule.Arn
