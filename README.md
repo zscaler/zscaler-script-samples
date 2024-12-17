@@ -1,1 +1,3 @@
-README for Zscaler Script Samples
+# Zscaler Script Samples
+
+This repository contains **unofficial** scripts, templates and configuration files that can be used to aid in the administration of a Zscaler environment. Many of the scripts have been developed by Product, Engineering and Professional Services teams to aid in the deployment, troubleshooting or automation of an environment. They are being made available in this repository without warranty or guarantee so that others can make use of them as necessary.
