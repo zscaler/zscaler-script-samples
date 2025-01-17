@@ -4,6 +4,8 @@ This tool integrates AWS's GuardDuty Threat Intelligence with Zscaler's Zero Tru
 
 During runtime, the integration periodically (by default, every 5 minutes) checks AWS GuardDuty findings and extracts potentially dangerous FQDNs and IP addresses. These entries are then used to create/update IP and FQDN Destination Groups within Zscaler Internet Access. Once Destination Groups are created/updated with the latest findings, they are attached to a Firewall policy to block and log access. The script overwrites previous entries in the Destination Group every time it runs. As such, when GuardDuty ages entries out over time, they are likewise aged out of the ZIA Destination Group.
 
+![alt text](https://github.com/zscaler/zscaler-script-samples/blob/main/ZIA/AWS-guardduty-to-ZIA/guardduty-to-ZIA.png "AWS GuardDuty to ZIA")
+
 ## Requirements
 - Zscaler Internet Access
 - A Zscaler Cloud Access API Key
