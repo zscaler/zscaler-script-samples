@@ -4,6 +4,8 @@ This tool integrates AWS's GuardDuty with Zscaler Deception to provide high fide
 
 During runtime, the integration periodically (by default, every 5 minutes) checks Zscaler Deception findings and uploads them as a text file to a common S3 bucket. GuardDuty then ingests the contents of this text file and updates its Findings, which can then be used by other AWS services (such as Security Hub) to provide automated remediation.
 
+![alt text](https://github.com/zscaler/zscaler-script-samples/blob/main/Deception/deception-to-AWS-guardduty/deception-to-guardduty.png "Zscaler Deception to AWS GuardDuty")
+
 ## Requirements
 - Zscaler Deception
 - A subscription to AWS GuardDuty with an active Detector
