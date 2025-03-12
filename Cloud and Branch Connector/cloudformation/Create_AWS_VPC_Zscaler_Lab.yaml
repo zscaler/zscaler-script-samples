@@ -1,0 +1,681 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS CloudFormation template to create a VPC with subnets, NAT, security groups, IAM, and optional EC2 instances across 2 AZs.'
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: "Network Configuration"
+        Parameters:
+          - VPCCIDR
+          - PublicCIDR
+          - WorkloadAZ1CIDR
+          - WorkloadAZ2CIDR
+          - ZscalerAZ1CIDR
+          - ZscalerAZ2CIDR
+          - TgwAZ1CIDR
+          - TgwAZ2CIDR
+          - AZ1
+          - AZ2
+      - Label:
+          default: "EC2 Configuration"
+        Parameters:
+          - DeployLinuxWorkloadEC2
+          - LatestAmazonLinuxAmi
+          - DeployWindowsWorkloadEC2
+          - LatestWindowsAmi
+          - DeployAppCEC2
+          - KeyName
+      - Label:
+          default: "Zscaler Configuration"
+        Parameters:
+          - AcProvKey
+          - MicroegAgentProvKey
+      - Label:
+          default: "Misc"
+        Parameters:
+          - Prefix
+          - Owner
+
+Parameters:
+  AZ1:
+    Type: AWS::EC2::AvailabilityZone::Name
+    Description: "Select a first Availability Zone"
+
+  AZ2:
+    Type: AWS::EC2::AvailabilityZone::Name
+    Description: "Select a second Availability Zone"
+
+  VPCCIDR:
+    Type: String
+    Default: "10.0.0.0/16"
+    Description: "CIDR block for the VPC (must be /16)"
+    AllowedPattern: "^([0-9]{1,3}.[0-9]{1,3}).0.0/16$"
+    ConstraintDescription: "VPC CIDR must be in x.x.0.0/16 format"
+
+  PublicCIDR:
+    Type: String
+    Default: "10.0.0.0/24"
+    Description: "CIDR block for the Public AZ1 Subnet"
+
+  WorkloadAZ1CIDR:
+    Type: String
+    Default: "10.0.1.0/24"
+    Description: "CIDR block for the Workload AZ1 Subnet"
+
+  WorkloadAZ2CIDR:
+    Type: String
+    Default: "10.0.2.0/24"
+    Description: "CIDR block for the Workload AZ2 Subnet"
+
+  ZscalerAZ1CIDR:
+    Type: String
+    Default: "10.0.3.0/24"
+    Description: "CIDR block for the Zscaler AZ1 Subnet"
+
+  ZscalerAZ2CIDR:
+    Type: String
+    Default: "10.0.4.0/24"
+    Description: "CIDR block for the Zscaler AZ2 Subnet"
+
+  TgwAZ1CIDR:
+    Type: String
+    Default: "10.0.5.0/24"
+    Description: "CIDR block for the TGW AZ1 Subnet"
+
+  TgwAZ2CIDR:
+    Type: String
+    Default: "10.0.6.0/24"
+    Description: "CIDR block for the TGW AZ2 Subnet"
+
+  Prefix:
+    Type: String
+    Description: "Type a prefix to create all resources with"
+    Default: mylab
+
+  Owner:
+    Type: String
+    Description: "Enter your name to add Owner tag to all created resources"
+
+  KeyName:
+    Description: "Select an existing EC2 Key Pair for SSH access"
+    Type: "AWS::EC2::KeyPair::KeyName"
+
+  DeployLinuxWorkloadEC2:
+    Type: String
+    AllowedValues: ["true", "false"]
+    Default: "true"
+    Description: "Set to 'true' to deploy 2 Linux EC2 instances in the Workloads subnets."
+
+  DeployWindowsWorkloadEC2:
+    Type: String
+    AllowedValues: ["true", "false"]
+    Default: "true"
+    Description: "Set to 'true' to deploy 2 Windows EC2 instances in the Workloads subnets."
+
+  DeployAppCEC2:
+    Type: String
+    AllowedValues: ["true", "false"]
+    Default: "true"
+    Description: "Set to 'true' to deploy 1 Zscaler App Connector EC2 instance in Zscaler subnet."
+
+  LatestAmazonLinuxAmi:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64
+    
+  LatestWindowsAmi:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: "/aws/service/ami-windows-latest/Windows_Server-2022-English-Full-Base"
+
+  AcProvKey:
+    Type: String
+    Description: "Create and Paste ZPA App Connector Provisioning Key"
+
+  MicroegAgentProvKey:
+    Type: String
+    Description: "Create and Paste Zscaler Microsegmentation Agent Provisioning Key"
+
+
+Mappings:
+  RegionMap:
+    us-east-1:        # US East (N. Virginia)
+      ZscalerAMI: ami-0322d54b219b3abd9
+    us-east-2:        # US East (Ohio)
+      ZscalerAMI: ami-03a4849d14a311453
+    us-west-1:        # US West (N. California)
+      ZscalerAMI: ami-0af15a935af44328e
+    us-west-2:        # US West (Oregon)
+      ZscalerAMI: ami-04dded24b6e7d76dd
+    af-south-1:       # Africa (Cape Town)
+      ZscalerAMI: ami-05af123527a256f56
+    ap-east-1:        # Asia Pacific (Hong Kong)
+      ZscalerAMI: ami-0f4fcb0e6bc363301
+    ap-south-1:       # Asia Pacific (Mumbai)
+      ZscalerAMI: ami-0d014aea2738ddf05
+    ap-south-2:       # Asia Pacific (Hyderabad)
+      ZscalerAMI: ami-0e7524db46c0e38e3
+    ap-southeast-1:   # Asia Pacific (Singapore)
+      ZscalerAMI: ami-07353deb50e6fa71e
+    ap-southeast-2:   # Asia Pacific (Sydney)
+      ZscalerAMI: ami-0525ae11ed00b1198
+    ap-southeast-3:   # Asia Pacific (Jakarta)
+      ZscalerAMI: ami-00f72b3b06d61ce0d
+    ap-southeast-4:   # Asia Pacific (Melbourne)
+      ZscalerAMI: ami-0c5265f79bcd85afe
+    ap-northeast-1:   # Asia Pacific (Tokyo)
+      ZscalerAMI: ami-0966e97ead528cdcb
+    ap-northeast-2:   # Asia Pacific (Seoul)
+      ZscalerAMI: ami-0c77f262a14900d81
+    ap-northeast-3:   # Asia Pacific (Osaka)
+      ZscalerAMI: ami-02c230aab3d84ef8b
+    ca-central-1:     # Canada (Central)
+      ZscalerAMI: ami-0672d3ac4d7ebd181
+    eu-central-1:     # Europe (Frankfurt)
+      ZscalerAMI: ami-07be241af60e4e5ce
+    eu-central-2:     # Europe (Zurich)
+      ZscalerAMI: ami-0c1815a5383307dbe
+    eu-north-1:       # Europe (Stockholm)
+      ZscalerAMI: ami-0c738661cc7a6925c
+    eu-south-1:       # Europe (Milan)
+      ZscalerAMI: ami-0579eac39be2c894f
+    eu-south-2:       # Europe (Spain)
+      ZscalerAMI: ami-065729930fce71c0c
+    eu-west-1:        # Europe (Ireland)
+      ZscalerAMI: ami-02af09f61ec8b75cf
+    eu-west-2:        # Europe (London)
+      ZscalerAMI: ami-03323fdd5bffb689d
+    eu-west-3:        # Europe (Paris)
+      ZscalerAMI: ami-00b6ea36e0fb5b250
+    il-central-1:     # Israel (Tel Aviv)
+      ZscalerAMI: ami-0c50572aedf46bbba
+    me-central-1:     # Middle East (UAE)
+      ZscalerAMI: ami-06e69942f5cbb1b2c
+    me-south-1:       # Middle East (Bahrain)
+      ZscalerAMI: ami-0c6fe7548b91ca24f
+    sa-east-1:        # South America (São Paulo)
+      ZscalerAMI: ami-0ea4d8848b582cd0d
+    us-gov-east-1:    # AWS GovCloud (US-East)
+      ZscalerAMI: ami-0daa69e20bc95f65c
+    us-gov-west-1:    # AWS GovCloud (US-West)
+      ZscalerAMI: ami-08fbb876e7dba9936
+
+
+Resources:
+
+  # VPC
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VPCCIDR
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Sub "${Prefix}-VPC"
+        - Key: Owner
+          Value: !Ref Owner
+
+  # Internet Gateway
+  IGW:
+    Type: AWS::EC2::InternetGateway
+
+  IGWAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref IGW
+
+  # Public Subnet (AZ1)
+  PublicSubnetAZ1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref PublicCIDR
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: !Ref AZ1
+      Tags:
+        - Key: Name
+          Value: !Sub "${Prefix}-Public-AZ1"
+
+  # Public Route Table
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${Prefix}-Public-RT"
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: "0.0.0.0/0"
+      GatewayId: !Ref IGW
+
+  PublicSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetAZ1
+      RouteTableId: !Ref PublicRouteTable
+
+  # NAT Gateway
+  NatEIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+
+  NatGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      SubnetId: !Ref PublicSubnetAZ1
+      AllocationId: !GetAtt NatEIP.AllocationId
+      Tags:
+        - Key: Name
+          Value: !Sub "${Prefix}-NATGateway"
+
+  # Private Subnets (Each /24 in Both AZs)
+  PrivateSubnetWorkloads1AZ1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref WorkloadAZ1CIDR
+      AvailabilityZone: !Ref AZ1
+      Tags:
+        - Key: Name
+          Value: !Sub "${Prefix}-Workloads1-AZ1"
+
+  PrivateSubnetWorkloads1AZ2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref WorkloadAZ2CIDR
+      AvailabilityZone: !Ref AZ2
+      Tags:
+        - Key: Name
+          Value: !Sub "${Prefix}-Workloads1-AZ2"
+
+  PrivateSubnetZscalerAZ1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref ZscalerAZ1CIDR
+      AvailabilityZone: !Ref AZ1
+      Tags:
+        - Key: Name
+          Value: !Sub "${Prefix}-Zscaler-AZ1"
+
+  PrivateSubnetZscalerAZ2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref ZscalerAZ2CIDR
+      AvailabilityZone: !Ref AZ2
+      Tags:
+        - Key: Name
+          Value: !Sub "${Prefix}-Zscaler-AZ2"
+
+  PrivateSubnetTgwAZ1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref TgwAZ1CIDR
+      AvailabilityZone: !Ref AZ1
+      Tags:
+        - Key: Name
+          Value: !Sub "${Prefix}-Tgw-AZ1"
+
+  PrivateSubnetTgwAZ2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref TgwAZ2CIDR
+      AvailabilityZone: !Ref AZ2
+      Tags:
+        - Key: Name
+          Value: !Sub "${Prefix}-Tgw-AZ2"
+
+  # Private Route Tables (Unique per Subnet per AZ)
+  PrivateRouteTableWorkloads1AZ1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${Prefix}-Workloads1-AZ1-RT"
+
+  Workloads1AZ1Route:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableWorkloads1AZ1
+      DestinationCidrBlock: "0.0.0.0/0"
+      GatewayId: !Ref NatGateway
+
+  PrivateRouteTableWorkloads1AZ2:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${Prefix}-Workloads1-AZ2-RT"
+
+  Workloads1AZ2Route:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableWorkloads1AZ2
+      DestinationCidrBlock: "0.0.0.0/0"
+      GatewayId: !Ref NatGateway
+
+  PrivateRouteTableZscalerAZ1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${Prefix}-Zscaler-AZ1-RT"
+
+  ZscalerAZ1Route:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableZscalerAZ1
+      DestinationCidrBlock: "0.0.0.0/0"
+      GatewayId: !Ref NatGateway
+
+  PrivateRouteTableZscalerAZ2:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${Prefix}-Zscaler-AZ2-RT"
+
+  ZscalerAZ2Route:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableZscalerAZ2
+      DestinationCidrBlock: "0.0.0.0/0"
+      GatewayId: !Ref NatGateway
+
+  PrivateRouteTableTgwAZ1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${Prefix}-Tgw-AZ1-RT"
+
+  TgwAZ1Route:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableTgwAZ1
+      DestinationCidrBlock: "0.0.0.0/0"
+      GatewayId: !Ref NatGateway
+
+  PrivateRouteTableTgwAZ2:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${Prefix}-Tgw-AZ2-RT"
+
+  TgwAZ2Route:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableTgwAZ2
+      DestinationCidrBlock: "0.0.0.0/0"
+      GatewayId: !Ref NatGateway
+
+  # Associate Each Subnet with its Route Table
+  Workloads1AZ1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetWorkloads1AZ1
+      RouteTableId: !Ref PrivateRouteTableWorkloads1AZ1
+
+  Workloads1AZ2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetWorkloads1AZ2
+      RouteTableId: !Ref PrivateRouteTableWorkloads1AZ2
+
+  ZscalerAZ1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetZscalerAZ1
+      RouteTableId: !Ref PrivateRouteTableZscalerAZ1
+
+  ZscalerAZ2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetZscalerAZ2
+      RouteTableId: !Ref PrivateRouteTableZscalerAZ2
+
+  TgwAZ1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetTgwAZ1
+      RouteTableId: !Ref PrivateRouteTableTgwAZ1
+
+  TgwAZ2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetTgwAZ2
+      RouteTableId: !Ref PrivateRouteTableTgwAZ2
+
+  # Security Group for EC2 Instances
+  SGAllowAll:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow all inbound and outbound
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: "-1"
+          CidrIp: "0.0.0.0/0"
+      SecurityGroupEgress:
+        - IpProtocol: "-1"
+          CidrIp: "0.0.0.0/0"
+
+  # IAM Role for SSM
+  SSMInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${Prefix}-SSMRole"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: "ec2.amazonaws.com"
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+      Tags:
+        - Key: Name
+          Value: !Sub "${Prefix}-SSMRole"
+
+  # IAM Instance Profile for SSM
+  SSMInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref SSMInstanceRole
+      InstanceProfileName: !Sub "${Prefix}-SSMInstanceProfile"
+
+  # Linux Workload EC2 Instances
+  WorkloadInstanceAZ1:
+    Type: AWS::EC2::Instance
+    Condition: DeployLinuxWorkloadEC2
+    Properties:
+      InstanceType: t3.micro
+      ImageId: !Ref LatestAmazonLinuxAmi
+      SubnetId: !Ref PrivateSubnetWorkloads1AZ1
+      SecurityGroupIds:
+        - !Ref SGAllowAll
+      IamInstanceProfile: !Ref SSMInstanceProfile
+      KeyName: !Ref KeyName
+      Tags:
+        - Key: Name
+          Value: !Sub "${Prefix}-Workload-Linux-AZ1"
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          set -e
+          # Ensure required directories exist
+          sudo mkdir -p /opt/zscaler/var/
+          # Download Linux Agent
+          curl -L -o /tmp/eyez-agentmanager.rpm https://eyez-dist.private.zscaler.com/linux/eyez-agentmanager-default-1.el7.x86_64.rpm
+          # Write the provisioning key securely
+          echo "${MicroegAgentProvKey}" | sudo tee /opt/zscaler/var/provision_key > /dev/null
+          sudo chmod 600 /opt/zscaler/var/provision_key
+          # Install Zscaler Microseg Agent
+          sudo yum install --disablerepo=* -y /tmp/eyez-agentmanager.rpm
+          # Enable and start the agent
+          sudo systemctl enable eyez-agentmanager
+          sudo systemctl start eyez-agentmanager
+
+  WorkloadInstanceAZ2:
+    Type: AWS::EC2::Instance
+    Condition: DeployLinuxWorkloadEC2
+    Properties:
+      InstanceType: t3.micro
+      ImageId: !Ref LatestAmazonLinuxAmi
+      SubnetId: !Ref PrivateSubnetWorkloads1AZ2
+      SecurityGroupIds:
+        - !Ref SGAllowAll
+      IamInstanceProfile: !Ref SSMInstanceProfile
+      KeyName: !Ref KeyName
+      Tags:
+        - Key: Name
+          Value: !Sub "${Prefix}-Workload-Linux-AZ2"
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          set -e
+          # Ensure required directories exist
+          sudo mkdir -p /opt/zscaler/var/
+          # Download Linux Agent
+          curl -L -o /tmp/eyez-agentmanager.rpm https://eyez-dist.private.zscaler.com/linux/eyez-agentmanager-default-1.el7.x86_64.rpm
+          # Write the provisioning key securely
+          echo "${MicroegAgentProvKey}" | sudo tee /opt/zscaler/var/provision_key > /dev/null
+          sudo chmod 600 /opt/zscaler/var/provision_key
+          # Install Zscaler Microseg Agent
+          sudo yum install --disablerepo=* -y /tmp/eyez-agentmanager.rpm
+          # Enable and start the agent
+          sudo systemctl enable eyez-agentmanager
+          sudo systemctl start eyez-agentmanager
+
+  # Windows Workload EC2 Instances
+  WindowsInstanceAZ1:
+    Type: AWS::EC2::Instance
+    Condition: DeployWindowsWorkloadEC2
+    Properties:
+      InstanceType: t3.small
+      ImageId: !Ref LatestWindowsAmi
+      SubnetId: !Ref PrivateSubnetWorkloads1AZ1
+      SecurityGroupIds:
+        - !Ref SGAllowAll
+      IamInstanceProfile: !Ref SSMInstanceProfile
+      KeyName: !Ref KeyName
+      Tags:
+        - Key: Name
+          Value: !Sub "${Prefix}-Workload-Windows-AZ1"
+      UserData:
+        Fn::Base64: !Sub |
+          <powershell>
+          # Create a directory for installation
+          New-Item -ItemType Directory -Path "C:\zsmicroseg" -Force
+
+          # Write the provisioning key to the file
+          $ProvisionKey = "${MicroegAgentProvKey}"
+          Set-Content -Path "C:\zsmicroseg\provision_key" -Value $ProvisionKey
+
+          # Download and install the MSI package
+          Invoke-WebRequest -Uri "https://eyez-dist.private.zscaler.com/windows/eyez-agentmanager-default.msi" -OutFile "C:\zsmicroseg\eyez-agentmanager-default.msi"
+
+          # Install the MSI package with the provisioning key
+          Start-Process -FilePath "msiexec.exe" -ArgumentList "/i `"C:\zsmicroseg\eyez-agentmanager-default.msi`" PROVISIONKEY_FILE=`"C:\zsmicroseg\provision_key`" /qn" -NoNewWindow -Wait
+          </powershell>
+
+  WindowsInstanceAZ2:
+    Type: AWS::EC2::Instance
+    Condition: DeployWindowsWorkloadEC2
+    Properties:
+      InstanceType: t3.small
+      ImageId: !Ref LatestWindowsAmi
+      SubnetId: !Ref PrivateSubnetWorkloads1AZ2
+      SecurityGroupIds:
+        - !Ref SGAllowAll
+      IamInstanceProfile: !Ref SSMInstanceProfile
+      KeyName: !Ref KeyName
+      Tags:
+        - Key: Name
+          Value: !Sub "${Prefix}-Workload-Windows-AZ2"
+      UserData:
+        Fn::Base64: !Sub |
+          <powershell>
+          # Create a directory for installation
+          New-Item -ItemType Directory -Path "C:\zsmicroseg" -Force
+
+          # Write the provisioning key to the file
+          $ProvisionKey = "${MicroegAgentProvKey}"
+          Set-Content -Path "C:\zsmicroseg\provision_key" -Value $ProvisionKey
+
+          # Download and install the MSI package
+          Invoke-WebRequest -Uri "https://eyez-dist.private.zscaler.com/windows/eyez-agentmanager-default.msi" -OutFile "C:\zsmicroseg\eyez-agentmanager-default.msi"
+
+          # Install the MSI package with the provisioning key
+          Start-Process -FilePath "msiexec.exe" -ArgumentList "/i `"C:\zsmicroseg\eyez-agentmanager-default.msi`" PROVISIONKEY_FILE=`"C:\zsmicroseg\provision_key`" /qn" -NoNewWindow -Wait
+          </powershell>
+
+  # App Connector EC2 Instance (just 1 for now)
+  AppConnectorAZ1:
+    Type: AWS::EC2::Instance
+    Condition: DeployAppCEC2
+    Properties:
+      InstanceType: t3.medium
+      ImageId: !FindInMap
+        - RegionMap
+        - !Ref 'AWS::Region'
+        - ZscalerAMI
+      SubnetId: !Ref PrivateSubnetZscalerAZ1
+      SecurityGroupIds:
+        - !Ref SGAllowAll
+      IamInstanceProfile: !Ref SSMInstanceProfile
+      KeyName: !Ref KeyName
+      Tags:
+        - Key: Name
+          Value: !Sub "${Prefix}-AppConnector-AZ1"
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          set -e
+          # Install AWS SSM Agent if not installed
+          if ! systemctl list-units --full -all | grep -q amazon-ssm-agent; then
+            sudo dnf install -y --nogpgcheck https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+            systemctl enable amazon-ssm-agent
+            systemctl start amazon-ssm-agent
+          fi
+          # Stop the App Connector service which was auto-started at boot time
+          sudo systemctl stop zpa-connector
+          # Copy App Connector provisioning key from ZPA Admin Portal to a file
+          # The provisioning key must be within double quotes
+          sudo echo "${AcProvKey}" > /opt/zscaler/var/provision_key
+          # Run a yum update to apply the latest patches
+          sudo yum update -y
+          # Start the App Connector service to enroll it in the ZPA cloud
+          sudo systemctl start zpa-connector
+          # Wait for the App Connector to download the latest build
+          sleep 60
+          # Stop and then start the App Connector to run the latest build
+          sudo systemctl stop zpa-connector
+          sudo systemctl start zpa-connector
+
+Conditions:
+  DeployLinuxWorkloadEC2: !Equals [!Ref DeployLinuxWorkloadEC2, "true"]
+  DeployWindowsWorkloadEC2: !Equals [!Ref DeployWindowsWorkloadEC2, "true"]
+  DeployAppCEC2: !Equals [!Ref DeployAppCEC2, "true"]
+
+Outputs:
+  VPCID:
+    Value: !Ref VPC
