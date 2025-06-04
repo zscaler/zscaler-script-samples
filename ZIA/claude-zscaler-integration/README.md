@@ -8,7 +8,7 @@ This tool allows Claude Desktop to interact with Zscaler Internet Access (ZIA) A
 2. Claude Desktop application
 3. Zscaler Internet Access (ZIA) account with API access
 4. Required Python packages:
-   - `zscaler-sdk` - Install with `pip install zscaler-sdk`
+   - `zscaler-sdk-python` - Install with `pip install zscaler-sdk`
    - `fastmcp` - Install with `pip install fastmcp`
 
 ## File Structure
